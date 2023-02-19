@@ -21,7 +21,9 @@ inputs:
     description: 'The full image name and tag to deploy'
     required: true
 outputs:
-  webapp-url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+  webapp-url: 
+    description: 'The url where the app is deployed to'
+    value: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     
 defaults:
