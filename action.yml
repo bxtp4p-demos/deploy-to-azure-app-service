@@ -1,0 +1,56 @@
+name: 'Deploy to Azure App Service'
+description: 'Deploys a container to Azure App Service'
+
+inputs:
+  client-id:  
+    description: 'The Azure SP Client ID'
+    required: true
+  tenant-id:
+    description: 'The Azure Tenant ID'
+    required: true
+  subscription-id: 
+    description: 'The Azure Subscription ID'
+    required: true
+  app-name:
+    description: 'The app name in Azure'
+    required: true
+  publish-profile:
+    description: 'The publish profile to use'
+    required: true
+  image:
+    description: 'The full image name and tag to deploy'
+    required: true
+outputs:
+  webapp-url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    
+defaults:
+  run:
+    shell: bash
+
+runs:
+  using: "composite"
+  steps:
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        client-id: ${{ inputs.client-id }}
+        tenant-id: ${{ inputs.tenant-id }}
+        subscription-id: ${{ inputs.subscription-id }}
+
+    - name: Deploy to Azure App Service
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: '${{ inputs.app-name }}'
+        publish-profile: '${{ inputs.publish-profile }}'
+        images: '${{ inputs.image }}'
+
+    - if: always()
+      name: Logout from Azure
+      uses: azure/CLI@v1
+      with:
+        inlineScript: |
+          az logout
+          az cache purge
+          az account clear
